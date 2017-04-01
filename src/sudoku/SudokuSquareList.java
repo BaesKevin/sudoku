@@ -18,20 +18,39 @@ public class SudokuSquareList {
         squares = new ArrayList();
     }
     
-    public void addSquare(SudokuSquare sq){
+    public SudokuSquare get(int index){
+        return squares.get(index);
+    }
+    
+    public void add(SudokuSquare sq){
         this.squares.add(sq);
     }
     
-    public boolean isUniqueInLine(int number) {
+    public boolean numberCanBePlaced(int number) {
         boolean unique = true;
         int size = squares.size();
         
-        for (int i = 0; i <= size && unique; i++) {
+        for (int i = 0; i < size && unique; i++) {
             if (squares.get(i).getNumber() == number) {
                 unique = false;
             }
         }
 
         return unique;
+    }
+    
+    public int size(){
+        return squares.size();
+    }
+    
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        
+        for(SudokuSquare sq : squares){
+            sb.append(sq.getNumber()).append(" ");
+        }
+        
+        return sb.toString();
     }
 }

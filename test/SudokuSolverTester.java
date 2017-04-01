@@ -55,23 +55,23 @@ public class SudokuSolverTester {
     @Test
     public void testSolver() {
 
-        for (int i = 0; i < 100; i++) {
-            Sudoku toSolve = new Sudoku(unique);
-            Sudoku actualSolution = new Sudoku(completed);
+//        for (int i = 0; i < 10000; i++) {
+            Sudoku toSolve = new Sudoku(unique, 3,3);
+            Sudoku actualSolution = new Sudoku(completed, 3,3);
 
             SudokuSolver generator = new SudokuSolver(toSolve);
 
             Sudoku foundSolution = generator.getCompletedSudoku();
 
             Assert.assertTrue(actualSolution.equals(foundSolution));
-        }
+//        }
 
     }
 
     @Test
     public void testCountSolutions() {
-        Sudoku uniqueSudoku = new Sudoku(unique);
-        Sudoku multipleSoltionsSudoku = new Sudoku(multiple);
+        Sudoku uniqueSudoku = new Sudoku(unique, 3,3);
+        Sudoku multipleSoltionsSudoku = new Sudoku(multiple,3,3);
 
         SudokuSolver uniqueGenerator = new SudokuSolver(uniqueSudoku);
         SudokuSolver mulitpleGenerator = new SudokuSolver(multipleSoltionsSudoku);
@@ -81,6 +81,50 @@ public class SudokuSolverTester {
 
         Assert.assertTrue(1 == uniqueSolutions);
         Assert.assertTrue(1 < multipleSolutions);
+    }
+    
+    @Test
+    public void testGenerating4by4FromEmpty(){
+        Sudoku uniqueSudoku = new Sudoku(new int[4][4], 2,2);
+        SudokuSolver uniqueGenerator = new SudokuSolver(uniqueSudoku);
+        
+        Sudoku s = uniqueGenerator.getCompletedSudoku();
+    }
+    
+    @Test
+    public void testGenerating6by6FromEmpty(){
+        Sudoku uniqueSudoku = new Sudoku(new int[6][6], 2,3);
+        SudokuSolver uniqueGenerator = new SudokuSolver(uniqueSudoku);
+        
+        Sudoku s = uniqueGenerator.getCompletedSudoku();
+    }
+    
+    @Test
+    public void testGenerating9by9FromEmpty(){
+        Sudoku uniqueSudoku = new Sudoku(new int[9][9], 3,3);
+        SudokuSolver uniqueGenerator = new SudokuSolver(uniqueSudoku);
+        
+        Sudoku s = uniqueGenerator.getCompletedSudoku();
+    }
+    
+    @Test
+    public void test16by16(){
+        Sudoku uniqueSudoku = new Sudoku(new int[16][16], 4,4);
+        SudokuSolver uniqueGenerator = new SudokuSolver(uniqueSudoku);
+        
+        Sudoku s = uniqueGenerator.getCompletedSudoku();
+        
+        
+    }
+    
+    @Test
+    public void test25by25(){
+        Sudoku uniqueSudoku = new Sudoku(new int[25][25], 5,5);
+        SudokuSolver uniqueGenerator = new SudokuSolver(uniqueSudoku);
+        
+        Sudoku s = uniqueGenerator.getCompletedSudoku();
+        
+        
     }
 
 }

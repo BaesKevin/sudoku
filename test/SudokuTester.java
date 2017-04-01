@@ -4,12 +4,13 @@
  * and open the template in the editor.
  */
 
+import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import sudoku.Sudoku;
-import sudoku.SudokuSolver;
+//import sudoku.SudokuSolver;
 
 /**
  *
@@ -21,7 +22,7 @@ public class SudokuTester {
 
     @Before
     public void before() {
-        this.s = new Sudoku();
+        this.s = new Sudoku(new int[9][9], 3, 3);
     }
 
     @Test
@@ -114,7 +115,7 @@ public class SudokuTester {
         Assert.assertFalse(canPlace1);
         Assert.assertFalse(canPlace2);
     }
-
+//
     @Test
     public void testEquality() {
         int[][] completed = {
@@ -129,8 +130,8 @@ public class SudokuTester {
             {4, 7, 2, 5, 3, 6, 8, 1, 9}
         };
 
-        Sudoku first = new Sudoku(completed);
-        Sudoku second = new Sudoku(completed);
+        Sudoku first = new Sudoku(completed,3,3);
+        Sudoku second = new Sudoku(completed,3,3);
 
         Assert.assertTrue(first.equals(second));
 
@@ -139,43 +140,9 @@ public class SudokuTester {
         Assert.assertFalse(first.equals(second));
 
     }
-
+    
     @Test
-    public void TestUndoResets() {
-
-        int[][] completed = {
-            {2, 6, 1, 8, 9, 3, 7, 4, 5},
-            {7, 9, 4, 2, 1, 5, 6, 8, 3},
-            {8, 5, 3, 6, 7, 4, 1, 9, 2},
-            {5, 4, 8, 3, 6, 2, 9, 7, 1},
-            {1, 3, 9, 4, 5, 7, 2, 6, 8},
-            {6, 2, 7, 1, 8, 9, 3, 5, 4},
-            {3, 8, 6, 9, 4, 1, 5, 2, 7},
-            {9, 1, 5, 7, 2, 8, 4, 3, 6},
-            {4, 7, 2, 5, 3, 6, 8, 1, 9}
-        };
-
-        Sudoku s = new Sudoku(completed);
-
-        int expected3 = s.getNumberAt(5, 5);
-        int expected2 = s.getNumberAt(5, 6);
-        int expected1 = s.getNumberAt(5, 7);
-
-        s.resetPosition(5, 5);
-        s.resetPosition(5, 6);
-        s.resetPosition(5, 7);
-        s.undo();
-        Assert.assertEquals(expected1, s.getNumberAt(5, 7));
-        s.undo();
-        Assert.assertEquals(expected2, s.getNumberAt(5, 6));
-        s.undo();
-        Assert.assertEquals(expected3, s.getNumberAt(5, 5));
-
-    }
-
-    @Test
-    public void TestUndoPlacements() {
-
+    public void testAvailableNumbers(){
         int[][] unique = {
             {0, 0, 0, 7, 0, 3, 0, 0, 5},
             {0, 0, 1, 0, 0, 0, 0, 0, 8},
@@ -188,22 +155,77 @@ public class SudokuTester {
             {0, 0, 9, 0, 0, 6, 0, 0, 0}
         };
 
-        Sudoku s = new Sudoku(unique);
-
-        int expected1 = 4;
-        int expected2 = 6;
-        int expected3 = 8;
+        Sudoku sudoku = new Sudoku(unique,3,3);
         
-        s.place(0, 0, expected1);
-        s.place(0, 1, expected2);
-        s.place(0, 2, expected3);
+        ArrayList<Integer> numbers = sudoku.getSquareAt(0, 0).getAvailableNumbers();
         
-        s.undo();
-        s.undo();
-        s.undo();
-
-        Assert.assertEquals(0, s.getNumberAt(0, 0));
-        Assert.assertEquals(0, s.getNumberAt(0, 1));
-        Assert.assertEquals(0, s.getNumberAt(0, 2));
+        Assert.assertEquals(4, numbers.size());
     }
+//
+//    @Test
+//    public void TestUndoResets() {
+//
+//        int[][] completed = {
+//            {2, 6, 1, 8, 9, 3, 7, 4, 5},
+//            {7, 9, 4, 2, 1, 5, 6, 8, 3},
+//            {8, 5, 3, 6, 7, 4, 1, 9, 2},
+//            {5, 4, 8, 3, 6, 2, 9, 7, 1},
+//            {1, 3, 9, 4, 5, 7, 2, 6, 8},
+//            {6, 2, 7, 1, 8, 9, 3, 5, 4},
+//            {3, 8, 6, 9, 4, 1, 5, 2, 7},
+//            {9, 1, 5, 7, 2, 8, 4, 3, 6},
+//            {4, 7, 2, 5, 3, 6, 8, 1, 9}
+//        };
+//
+//        Sudoku s = new Sudoku(completed);
+//
+//        int expected3 = s.getNumberAt(5, 5);
+//        int expected2 = s.getNumberAt(5, 6);
+//        int expected1 = s.getNumberAt(5, 7);
+//
+//        s.resetPosition(5, 5);
+//        s.resetPosition(5, 6);
+//        s.resetPosition(5, 7);
+//        s.undo();
+//        Assert.assertEquals(expected1, s.getNumberAt(5, 7));
+//        s.undo();
+//        Assert.assertEquals(expected2, s.getNumberAt(5, 6));
+//        s.undo();
+//        Assert.assertEquals(expected3, s.getNumberAt(5, 5));
+//
+//    }
+//
+//    @Test
+//    public void TestUndoPlacements() {
+//
+//        int[][] unique = {
+//            {0, 0, 0, 7, 0, 3, 0, 0, 5},
+//            {0, 0, 1, 0, 0, 0, 0, 0, 8},
+//            {0, 0, 2, 0, 4, 0, 3, 7, 0},
+//            {0, 9, 0, 3, 1, 0, 0, 0, 0},
+//            {0, 0, 0, 8, 6, 0, 4, 5, 0},
+//            {2, 0, 0, 0, 0, 0, 0, 0, 0},
+//            {0, 1, 0, 0, 5, 0, 0, 2, 0},
+//            {0, 0, 5, 0, 7, 0, 0, 0, 0},
+//            {0, 0, 9, 0, 0, 6, 0, 0, 0}
+//        };
+//
+//        Sudoku s = new Sudoku(unique);
+//
+//        int expected1 = 4;
+//        int expected2 = 6;
+//        int expected3 = 8;
+//        
+//        s.place(0, 0, expected1);
+//        s.place(0, 1, expected2);
+//        s.place(0, 2, expected3);
+//        
+//        s.undo();
+//        s.undo();
+//        s.undo();
+//
+//        Assert.assertEquals(0, s.getNumberAt(0, 0));
+//        Assert.assertEquals(0, s.getNumberAt(0, 1));
+//        Assert.assertEquals(0, s.getNumberAt(0, 2));
+//    }
 }

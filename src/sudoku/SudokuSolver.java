@@ -1,5 +1,6 @@
 package sudoku;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,9 +13,9 @@ public class SudokuSolver {
     private Sudoku sudoku;
     private int solutionCount = 0;
 
-    public SudokuSolver() {
-        this(new Sudoku());
-    }
+//    public SudokuSolver() {
+//        this(new Sudoku());
+//    }
 
     public SudokuSolver(Sudoku sudoku) {
         this.sudoku = sudoku;
@@ -22,7 +23,7 @@ public class SudokuSolver {
 
     public Sudoku getCompletedSudoku() {
         this.generateSolutionRecursively(false);
-
+        System.out.println(sudoku);
         return this.sudoku;
     }
 
@@ -38,7 +39,8 @@ public class SudokuSolver {
 
     private boolean generateSolutionRecursively(boolean doCount) {
 
-        int[] emptyLocation = findEmptyLocation();
+//        int[] emptyLocation = findEmptyLocation();
+        int[] emptyLocation = findRandomEmptyLocation();
         
         if (emptyLocation == null) {
             return continueFindingSolutions(emptyLocation, doCount);
@@ -53,15 +55,15 @@ public class SudokuSolver {
     }
 
     private boolean tryPlacingNumber(int row, int col, boolean doCount) {
-        int[] possibleNumbers = getShuffledRow();
-
+        ArrayList<Integer> possibleNumbers = sudoku.getSquareAt(row, col).calcAvailableNumbers(); 
+        System.out.println(possibleNumbers);
         for (int num : possibleNumbers) {
             if (sudoku.place(row, col, num)) {
 
                 if (generateSolutionRecursively(doCount)) {
                     return true;
                 }
-
+                System.out.println("Had to backtrack");
                 sudoku.resetPosition(row, col); //no solution possible, unset the location
             }
         }
@@ -70,17 +72,48 @@ public class SudokuSolver {
     }
 
     private int[] findEmptyLocation() {
-        int[] emptyLocation = null;
-
-        for (int row = 0; row < 9 && emptyLocation == null; row++) {
-            for (int col = 0; col < 9 && emptyLocation == null; col++) {
-                if (sudoku.getNumberAt(row, col) == 0) {
-                    emptyLocation = new int[]{row, col};
+        int[] pos = null;
+        int width = sudoku.getWidth();
+        int height = sudoku.getHeight();
+        int smallestAmount = width + 1;
+        int amount;
+        SudokuSquare sq = null;
+        
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                sq = sudoku.getSquareAt(row, col);
+                
+                if (sq.getNumber() == 0) {
+                    amount = sq.calcAvailableNumbers().size();
+                    if( amount < smallestAmount){
+                        smallestAmount = amount;
+                        pos = new int[]{row, col};
+                    }
+                        
                 }
             }
         }
 
-        return emptyLocation;
+        return pos;
+    }
+    
+    private int[] findRandomEmptyLocation(){
+        int[] pos = null;
+        int width = sudoku.getWidth();
+        int height = sudoku.getHeight();
+        SudokuSquare sq;
+        
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                sq = sudoku.getSquareAt(row, col);
+                
+                if (sq.getNumber() == 0) {
+                    return new int[]{row, col};
+                }
+            }
+        }
+
+        return pos;
     }
 
     private boolean continueFindingSolutions(int[] location, boolean doCount) {

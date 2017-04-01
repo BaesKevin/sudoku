@@ -26,12 +26,14 @@ public class GeneratorRunerr {
             {0, 0, 9, 0, 0, 6, 0, 0, 0}
         };
         
-        Sudoku s = new Sudoku(completed);
-        System.out.println("Unsolved:");
-        System.out.println(s.toString());
-        System.out.println("\nSolved:");
-        SudokuSolver ss = new SudokuSolver(s);
-        Sudoku solution = ss.getCompletedSudoku();
-        System.out.println(solution.toString());
+        Sudoku s = new Sudoku(completed, 3,3);
+//        System.out.println("Unsolved:");
+//        System.out.println(s.toString());
+//        System.out.println("\nSolved:");
+//        SudokuSolver ss = new SudokuSolver(s);
+//        Sudoku solution = ss.getCompletedSudoku();
+//        System.out.println(solution.toString());
+
+        System.out.println(s);
     }
 }

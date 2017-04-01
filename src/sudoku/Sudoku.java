@@ -5,6 +5,7 @@
  */
 package sudoku;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
 
@@ -13,31 +14,102 @@ import java.util.Stack;
  * @author kevin
  */
 public class Sudoku {
-
-    private int[][] sudoku;
-    private Stack<Undoable> previousMoves;
+    private int width, height, sectionWidth, sectionHeight;
     
-    public Sudoku() {
-        this(new int[9][9]);
+    private ArrayList<SudokuSquareList> rows;
+    private ArrayList<SudokuSquareList> cols;
+    private ArrayList<SudokuSquareList> sections;
+    
+//    private Stack<Undoable> previousMoves;
+    
+//    public Sudoku() {
+//        this(new int[9][9]);
+//    }
+
+    public Sudoku(int[][] sudoku, int sectionWidth, int sectionHeight) {
+        
+        int[][] sudokuInput = cloneTwoDimArray(sudoku);
+
+        this.width = sudokuInput[0].length;
+        this.height =  sudokuInput.length;
+        this.sectionWidth = sectionWidth;
+        this.sectionHeight = sectionHeight;
+        
+        int numSections = width / sectionWidth * height / sectionHeight;
+        initSquareLists(height, width, numSections);
+        
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                addNewSquare(row, col, sudokuInput[row][col]);
+            }
+        }
+        
+        initPossibleNumbers();
+        
+//        previousMoves = new Stack<Undoable>();
+    }
+    
+    private void initSquareLists(int numRows, int numCols, int numSections){
+        this.cols = new ArrayList();
+        for (int i = 0; i < numCols; i++) {
+            cols.add(new SudokuSquareList());
+        }
+        this.rows = new ArrayList();
+        for (int i = 0; i < numRows; i++) {
+            rows.add(new SudokuSquareList());
+        }
+        this.sections = new ArrayList();
+        for (int i = 0; i < numSections; i++) {
+            sections.add(new SudokuSquareList());
+        }
+    }
+    
+    private void addNewSquare(int rownum, int colnum, int number){
+        SudokuSquareList row = rows.get(rownum);
+        SudokuSquareList col = cols.get(colnum);
+        
+        int sectionNumber = getSectionNumber(rownum, colnum);
+        SudokuSquareList section = sections.get(sectionNumber);
+        
+        SudokuSquare sq = new SudokuSquare(number, row, col, section);
+        row.add(sq);
+        col.add(sq);
+        section.add(sq);
+    }
+    
+    private void initPossibleNumbers(){
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                getSquareAt(row, col).setAvailableNumbers();
+            }
+        }
     }
 
-    public Sudoku(int[][] sudoku) {
-        this.sudoku = cloneTwoDimArray(sudoku);
-        previousMoves = new Stack<Undoable>();
+    private int getSectionNumber(int row, int col){
+        int numSectionsInWidth = width / sectionWidth;
+        int sectionNum = numSectionsInWidth * (row / sectionHeight) + col / sectionWidth;
+        /*
+        0011
+        0011
+        2233
+        2233
+        
+        */
+        return sectionNum;
     }
-
+    
     //place a number on the board, row and col must be between 1 and 9 (included)
     public boolean place(int row, int col, int number) {
         boolean legalCoordinate = isLegalCoordinate(row, col);
         boolean legalNumber = isLegalNumber(number);
 
-        if (!legalCoordinate || !legalNumber || !isUniqueInRowColAndSquare(row, col, number)) {
+        if (!legalCoordinate || !legalNumber/* || !isUniqueInRowColAndSquare(row, col, number)*/) {
             return false;
         }
         
-        sudoku[row][col] = number;
+        setNumberAt(row, col, number);
         SudokuPlaceCommand command = new SudokuPlaceCommand(this, row, col);
-        this.previousMoves.add(command);
+//        this.previousMoves.add(command);
 
         return true;
     }
@@ -50,116 +122,58 @@ public class Sudoku {
             return false;
         }
         
-        sudoku[row][col] = number;
+        setNumberAt(row, col, number);
 
         return true;
     }
 
+    public SudokuSquare getSquareAt(int row, int col){
+        return rows.get(row).get(col);
+    }
+    
     public int getNumberAt(int row, int col) {
         if (!isLegalCoordinate(row, col)) {
             return 0;
         }
 
-        return sudoku[row][col];
+        return getSquareAt(row,col).getNumber();
+    }
+    
+    private void setNumberAt(int row, int col, int number){
+        getSquareAt(row, col).setNumber(number);
     }
 
     public void resetPosition(int row, int col) {
         int numberBeingReset = this.getNumberAt(row, col);
         SudokuResetCommand resetCommand = new SudokuResetCommand(this, row, col, numberBeingReset);
-        this.previousMoves.add(resetCommand);
+//        this.previousMoves.add(resetCommand);
         
-        sudoku[row][col] = 0;
+        setNumberAt(row, col, 0);
     }
     
     public void resetPositionWithoutAddingToStack(int row, int col) {
-        sudoku[row][col] = 0;
+        setNumberAt(row, col, 0);
     }
 
-    public boolean equals(Sudoku toCompare) {
-        boolean equal = true;
-
-        for (int row = 1; row <= 9 && equal; row++) {
-            for (int col = 1; col <= 9 && equal; col++) {
-                int first = this.getNumberAt(row, col);
-                int second = toCompare.getNumberAt(row, col);
-                if(first != second){
-                    equal = false;
-                }
-            }
-        }
-
-        return equal;
-    }
-
-    @Override
-    public String toString() {
-        String output = "";
-
-        for (int[] row : sudoku) {
-            output += Arrays.toString(row);
-            output += "\n";
-        }
-
-        return output;
-    }
+    
 
     private boolean isLegalCoordinate(int row, int col) {
-        boolean isLegalRow = 0 <= row && row <= 8;
-        boolean isLegalCol = 0 <= col && col <= 8;
+        boolean isLegalRow = 0 <= row && row <= height - 1;
+        boolean isLegalCol = 0 <= col && col <= width - 1;
 
         return isLegalCol && isLegalRow;
     }
 
     private boolean isLegalNumber(int number) {
-        return 1 <= number && number <= 9;
+        return 1 <= number && number <= width;
     }
 
     private boolean isUniqueInRowColAndSquare(int row, int col, int number) {
-        boolean uniqueInRow = isUniqueInRow(row, number);
-        boolean uniqueInCol = isUniqueInCol(col, number);
-        boolean uniqueInSquare = isUniqueInSquare(row, col, number);
+        boolean uniqueInRow = rows.get(row).numberCanBePlaced(number);
+        boolean uniqueInCol = cols.get(col).numberCanBePlaced(number);
+        boolean uniqueInSquare = sections.get(getSectionNumber(row, col)).numberCanBePlaced(number);
 
         return uniqueInRow && uniqueInCol && uniqueInSquare;
-    }
-
-    private boolean isUniqueInRow(int row, int number) {
-        boolean unique = true;
-
-        for (int col = 0; col <= 8 && unique; col++) {
-            if (sudoku[row][col] == number) {
-                unique = false;
-            }
-        }
-
-        return unique;
-    }
-
-    private boolean isUniqueInCol(int col, int number) {
-        boolean unique = true;
-
-        for (int row = 0; row <= 8 && unique; row++) {
-            if (sudoku[row][col] == number) {
-                unique = false;
-            }
-        }
-
-        return unique;
-    }
-
-    private boolean isUniqueInSquare(int row, int col, int number) {
-        int rowOfTopLeftSquare = row / 3 * 3;
-        int colofTopLeftSquare = col / 3 * 3;
-        boolean unique = true;
-
-        for (int rowInSquare = rowOfTopLeftSquare; rowInSquare < rowOfTopLeftSquare + 3 && unique; rowInSquare++) {
-            for (int colInSquare = colofTopLeftSquare; colInSquare < colofTopLeftSquare + 3 && unique; colInSquare++) {
-                if (sudoku[rowInSquare][colInSquare] == number) {
-                    unique = false;
-                }
-            }
-        }
-
-        return unique;
     }
 
     private int[][] cloneTwoDimArray(int[][] original) {
@@ -185,8 +199,55 @@ public class Sudoku {
     }
 
     public void undo() {
-        Undoable moveToUndo = this.previousMoves.pop();
+//        Undoable moveToUndo = this.previousMoves.pop();
         
-        moveToUndo.undo();
+//        moveToUndo.undo();
+    }
+    
+    public int getWidth(){
+        return width;
+    }
+    
+    public int getHeight(){
+        return height;
+    }
+    
+    public boolean equals(Sudoku toCompare) {
+        boolean equal = true;
+
+        for (int row = 1; row <= height; row++) {
+            for (int col = 1; col <= width; col++) {
+                int first = this.getNumberAt(row, col);
+                int second = toCompare.getNumberAt(row, col);
+                if(first != second){
+                    equal = false;
+                }
+            }
+        }
+
+        return equal;
+    }
+
+    @Override
+    public String toString() {
+        String output = "";
+        output += "cols\n";
+        for (SudokuSquareList row : cols) {
+            output += row;
+            output += "\n";
+        }
+        output+="\n";
+        output += "rows\n";
+        for (SudokuSquareList row : rows) {
+            output += row;
+            output += "\n";
+        }
+        output+="\nSections\n";
+        for (SudokuSquareList row : sections) {
+            output += row;
+            output += "\n";
+        }
+
+        return output;
     }
 }
