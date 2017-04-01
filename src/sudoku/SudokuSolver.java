@@ -39,8 +39,8 @@ public class SudokuSolver {
 
     private boolean generateSolutionRecursively(boolean doCount) {
 
-//        int[] emptyLocation = findEmptyLocation();
-        int[] emptyLocation = findRandomEmptyLocation();
+        int[] emptyLocation = findEmptyLocation();
+//        int[] emptyLocation = findRandomEmptyLocation();
         
         if (emptyLocation == null) {
             return continueFindingSolutions(emptyLocation, doCount);
